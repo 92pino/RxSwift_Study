@@ -83,12 +83,14 @@ RxSwift의 근본적인 학습 자체보다는, 빠르게 사용법을 익혀 �
 
 1. MVVM 아키텍쳐
 	- 어플리케이션 아키텍쳐<br/>
-    ![architectures](docs/architectures.png)<br/>
-	([이미지 출처](http://geekswithblogs.net/dlussier/archive/2009/11/21/136454.aspx))
+    ![architectures](docs/mvc_mvp_mvvm.jpeg)<br/>
+        크게보기([MVC](docs/mvc.jpeg), [MVP](docs/mvp.jpeg), [MVVM](docs/mvvm.jpeg))
 	- 왜 MVVM을 쓰는가?
 	- MVVM과 RxSwift의 꿀조합
 
-10. Refactoring to MVVM
+2. Refactoring to MVVM
+3. MVVM-C
+	- [Example](https://github.com/uptechteam/Coordinator-MVVM-Rx-Example)
 
 <br/>
 <hr/>
@@ -97,6 +99,8 @@ RxSwift의 근본적인 학습 자체보다는, 빠르게 사용법을 익혀 �
 
 - [시즌1 자료 보기](README_s1.md)
 - [카카오톡 RxSwift 오픈 채팅방](https://open.kakao.com/o/gl2YZjq)
+- [Video] [RxSwift+MVVM 4시간에 끝내기 (시즌2)](https://www.youtube.com/watch?v=iHKBNYMWd5I)<br/>
+  [![오프라인 모임 종햡편](https://img.youtube.com/vi/iHKBNYMWd5I/mqdefault.jpg)](https://www.youtube.com/watch?v=iHKBNYMWd5I)
 
 <br/>
 
