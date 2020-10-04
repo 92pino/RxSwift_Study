@@ -81,48 +81,62 @@ class ViewController: UIViewController {
     //      return Disposables.create()
     //    }
     
-    return Observable.create() { emitter in
-      let url = URL(string: url)!
-      let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
-        guard error == nil else {
-          emitter.onError(error!)
-          return
-        }
-        
-        if let dat = data, let json = String(data: dat, encoding: .utf8) {
-          emitter.onNext(json)
-        }
-        
-        emitter.onCompleted()
-      }
-      
-      task.resume()
-      
-      return Disposables.create() {
-        task.cancel()
-      }
-      
-    }
-    
-    
-    //    return Observable.create() { f in
-    //      DispatchQueue.global().async {
-    //        let url = URL(string: url)!
-    //        let data = try! Data(contentsOf: url)
-    //        let json = String(data: data, encoding: .utf8)
-    //
-    //        DispatchQueue.main.async {
-    //          f.onNext(json)
-    //          // 끝났다는 것을 알림
-    //          // 순환참조 문제 해결
-    //          // => subscribe 클로저에서 self를 캡쳐하여 순환참조를 발생시키는데 클로저가 생성되서 + 1 증가되고 클로저가 끝나면 -1 되어 순환참조가 없어진다
-    //          // => 클로저가 끝나는 경우는 completed, error
-    //          f.onCompleted()
+    //    return Observable.create() { emitter in
+    //      let url = URL(string: url)!
+    //      let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
+    //        guard error == nil else {
+    //          emitter.onError(error!)
+    //          return
     //        }
+    //
+    //        if let dat = data, let json = String(data: dat, encoding: .utf8) {
+    //          emitter.onNext(json)
+    //        }
+    //
+    //        emitter.onCompleted()
     //      }
     //
+    //      task.resume()
+    //
+    //      return Disposables.create() {
+    //        task.cancel()
+    //      }
+    //
+    //    }
+    
+    //  sugar API
+    
+    // 데이터를 하나만 보낼 경우
+    // just ==> create, onNext, onCompleted, Disposables를 한번에
+    //    return Observable.just("Hello World")
+    // 동일한 기능
+    //    return Observable.create() { emitter in
+    //      emitter.onNext("Hello World")
+    //      emitter.onCompleted()
     //      return Disposables.create()
     //    }
+    
+    //    return Observable.from(["Hello", "World"])
+    
+    
+    return Observable.create() { f in
+      DispatchQueue.global().async {
+        let url = URL(string: url)!
+        let data = try! Data(contentsOf: url)
+        let json = String(data: data, encoding: .utf8)
+        
+        DispatchQueue.main.async {
+          f.onNext(json)
+          // 끝났다는 것을 알림
+          // 순환참조 문제 해결
+          // => subscribe 클로저에서 self를 캡쳐하여 순환참조를 발생시키는데 클로저가 생성되서 + 1 증가되고 클로저가 끝나면 -1 되어 순환참조가 없어진다
+          // => 클로저가 끝나는 경우는 completed, error
+          f.onCompleted()
+        }
+      }
+      
+      return Disposables.create()
+    }
   }
   
   // MARK: SYNC
@@ -138,28 +152,39 @@ class ViewController: UIViewController {
     // disposable은 취소 시키는 용도
     _ = downloadJson(MEMBER_LIST_URL)
       .debug()
-      .subscribe { event in
-        // event 종류
-        // .next  ==> 데이터를 전달
-        // .error ==> 에러 발생하면서 종료
-        // .completed ==> 데이터 전달 완료 후 종료
-        switch event {
-        // 데이터가 전달될 때
-        case let .next(json):
-          DispatchQueue.main.async {
-            self.editView.text = json
-            self.setVisibleWithAnimation(self.activityIndicator, false)
-          }
-        // 데이터가 다 전달되고 끝났을 때
-        case .completed:
-          break
-        // 에러났을 경우
-        case .error:
-          break
-        }
-    }
-    
-    // dispose : 작업 시켜놓은 것을 끝나지 않아도 취소시키는 용도
-    // disposable.dispose()
+      //      .subscribe { event in
+      //        // event 종류
+      //        // .next  ==> 데이터를 전달
+      //        // .error ==> 에러 발생하면서 종료
+      //        // .completed ==> 데이터 전달 완료 후 종료
+      //        switch event {
+      //        // 데이터가 전달될 때
+      //        case let .next(json):
+      //          print(json)
+      //          DispatchQueue.main.async {
+      //            self.editView.text = json
+      //            self.setVisibleWithAnimation(self.activityIndicator, false)
+      //          }
+      //        // 데이터가 다 전달되고 끝났을 때
+      //        case .completed:
+      //          break
+      //        // 에러났을 경우
+      //        case .error:
+      //          break
+      //        }
+      
+      // subscribe에서 switch를 사용 안하고 필요한 event만 사용하는 sugar api
+      // DispatchQueue.main.async 대신 사용
+      .map { json in json?.count ?? 0 }
+      .filter { cnt in cnt > 0 }
+      .map { "\($0)"}
+      .observeOn(MainScheduler.instance)  // sugar APi : operator
+      .subscribe(onNext: { json in
+        self.editView.text = json
+        self.setVisibleWithAnimation(self.activityIndicator, false)
+      })
   }
+  
+  // dispose : 작업 시켜놓은 것을 끝나지 않아도 취소시키는 용도
+  // disposable.dispose()
 }
